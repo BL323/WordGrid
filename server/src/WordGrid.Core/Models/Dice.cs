@@ -10,6 +10,11 @@ namespace WordGrid.Core.Models
     public sealed class Dice
     {
         /// <summary>
+        /// Gets the dice position in the grid.
+        /// </summary>
+        public int Position { get; }
+
+        /// <summary>
         /// Gets and sets the visible face of the dice.
         /// </summary>
         public DiceFace VisibleFace { get; private set; }
@@ -22,8 +27,13 @@ namespace WordGrid.Core.Models
         /// Initialises a new instance of the <see cref="Dice" /> class.
         /// </summary>
         /// <param name="faces">Represents 6 faces of the dice.</param>
-        public Dice(IReadOnlyList<DiceFace> faces)
+        public Dice(int position, IReadOnlyList<DiceFace> faces)
         {
+            Position = Guard.Argument(position, nameof(position))
+                        .NotNegative()
+                        .LessThan(16)
+                        .Value;
+
             _faces = Guard.Argument(faces, nameof(faces))
                     .NotNull()
                     .NotEmpty()

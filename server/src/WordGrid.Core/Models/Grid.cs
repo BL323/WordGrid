@@ -11,6 +11,11 @@ namespace WordGrid.Core.Models
     public sealed class Grid
     {
         /// <summary>
+        /// Gets the grid size.
+        /// </summary>
+        public int GridSize { get; }
+
+        /// <summary>
         /// Gets the current representation of dice on the grid.
         /// </summary>
         public IReadOnlyList<Dice> Dice => _dice;
@@ -28,6 +33,8 @@ namespace WordGrid.Core.Models
                 .Count(16)
                 .Value
                 .ToList();
+
+            GridSize = 4;
         }
 
         /// <summary>

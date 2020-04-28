@@ -11,6 +11,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using server.Hubs;
+using WordGrid.Api.Client.Interface;
+using WordGrid.Api.Respositories;
+using WordGrid.Core.Models;
+using WordGrid.Core.Repositories;
 
 namespace server
 {
@@ -27,11 +31,14 @@ namespace server
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-
             services.AddCors();
+            services.AddSignalR(opts => {});
+            services.AddMemoryCache();
 
-            services.AddSignalR(opts => {
-            });
+            services.AddTransient<IGameRepository, GameRepository>();
+            services.AddTransient<GameManager>();
+            services.AddTransient<GridFactory>();
+            services.AddTransient<AsDto>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

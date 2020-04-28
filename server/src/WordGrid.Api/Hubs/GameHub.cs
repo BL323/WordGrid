@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
-using WordGrid.Core.Models;
+using WordGrid.Api.Client.Interface;
 
 namespace server.Hubs
 {
@@ -11,10 +11,8 @@ namespace server.Hubs
     /// </summary>
     public interface IGameClient 
     {
-        //Task StartNewGameAsync();
-        Task StartRoundAsync(bool inputParam);
-        Task GameStateUpdatedAsync(GameState state);
-        //Task FinishGameAsync();
+        Task GameCreatedAsync(Game game);
+        Task NextRoundAsync(Game game);
     }
 
     /// <summary>

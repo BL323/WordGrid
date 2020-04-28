@@ -42,7 +42,7 @@ namespace WordGrid.Core.Models
                 {
                     faces.Add(new DiceFace(classicDiceLettering[i, j]));
                 }
-                dice.Add(new Dice(faces));
+                dice.Add(new Dice(position: i, faces));
             }
 
             return new Grid(dice);

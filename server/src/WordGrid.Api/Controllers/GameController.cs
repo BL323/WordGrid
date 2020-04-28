@@ -6,35 +6,62 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using server.Hubs;
-using WordGrid.Core.Models;
+using WordGrid.Api.Client.Interface;
 
-namespace server.Controllers
+namespace WordGrid.Api.Controllers
 {
     [ApiController]
     [Route("[controller]")]
     public class GameController : ControllerBase
     {
-        private readonly IHubContext<GameHub> _gameHub;
+        private Guid GameId = new Guid("88b9cc3c-bd93-497e-8f06-03b2d831d020");
 
-        public GameController(IHubContext<GameHub> gameHub)
+        private readonly Core.Models.GameManager _gameManager;
+        private readonly IHubContext<GameHub> _gameHub;
+        private readonly AsDto _asDto;
+
+        public GameController(
+            Core.Models.GameManager gameManager, 
+            IHubContext<GameHub> gameHub,
+            AsDto asDto)
         {
+            _gameManager = gameManager;
             _gameHub = gameHub;
+            _asDto = asDto;
         }
 
         [HttpGet]
         [Route("state")]
-        public async Task<int> GetGameStateAsync()
+        public async Task<Client.Interface.Game> GetGameAsync()
         {
             await Task.CompletedTask;
-            return 0;
+            var game = _gameManager.GetGame(GameId);
+            return _asDto.Game(game);
         }
 
         [HttpGet]
-        [Route("start/round")]
+        [Route("create")]
+        public async Task CreateNewGameAsync()
+        {
+            var game = _gameManager.CreateNewGame();
+            // This should be moved into a domain event reaction to subscribers for the game ID.
+            await _gameHub.Clients.All.SendAsync("GameCreatedAsync", _asDto.Game(game));
+        }
+
+        [HttpGet]
+        [Route("next/round")]
         public async Task StartRoundAsync()
         {
             await Task.CompletedTask;
-            // await _gameHub.Clients.All.SendAsync("GameStateUpdatedAsync", _state);
+
+            var game = _gameManager.GetGame(GameId);
+            if(game == null)
+                return;
+                 
+            game.NextRound();
+
+            // This should be moved into a domain event reaction to subscribers for the game ID.
+            await _gameHub.Clients.All.SendAsync("NextRoundAsync", _asDto.Game(game));
         }
     }
 }

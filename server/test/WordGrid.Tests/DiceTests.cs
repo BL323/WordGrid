@@ -19,7 +19,7 @@ namespace WordGrid.Tests
                 .Select(x => Gens.DiceFace.Generate(_random))
                 .ToArray();
             
-            new Dice(diceFaces);
+            new Dice(0, diceFaces);
         }
 
         [Theory]
@@ -33,13 +33,13 @@ namespace WordGrid.Tests
                 .Select(x => Gens.DiceFace.Generate(_random))
                 .ToArray();
             
-            Assert.Throws<ArgumentException>(() => new Dice(diceFaces));
+            Assert.Throws<ArgumentException>(() => new Dice(0, diceFaces));
         }
 
         [Fact]
         public void CreateDice_FailsWith_NullInput()
         {
-            Assert.Throws<ArgumentNullException>(() => new Dice(null));
+            Assert.Throws<ArgumentNullException>(() => new Dice(0, null));
         }
     } 
 }
