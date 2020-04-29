@@ -6,7 +6,8 @@
           :position="die.position" 
           :value="die.value" 
           :rotation="die.rotation" 
-          :shouldUnderline="die.shouldUnderline" />
+          :shouldUnderline="die.shouldUnderline"
+          :shouldShake="isShaking" />
       </div>
     </div>
   </div>
@@ -22,7 +23,8 @@ export default Vue.extend({
     DiceFace
   },
   props: {
-    dice: { type:Array, default:() => [] }
+    dice: { type:Array, default:() => [] },
+    isShaking: {type:Boolean, default: () => false }
   },
   data: () => {
     return {
@@ -52,6 +54,7 @@ export default Vue.extend({
   display: grid;
   grid-template-columns: 20% 20% 20% 20%;
   grid-template-rows: 20% 20% 20% 20%;
+  grid-gap: 12px;
   margin: auto;
 }
 </style>

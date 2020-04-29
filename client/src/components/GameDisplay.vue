@@ -1,9 +1,11 @@
 <template>
-  <div class="hello">
-    <word-grid :dice="gridDice" />
-    <button v-if="showCreateGame" @click="createGame">Create Game</button>
-    <button v-if="showNextRound" @click="nextRound">Next Round</button>
-    <button v-if="showFinishGame" @click="finishGame">Finish Game</button>
+  <div class="game-container">
+    <countdown v-if="showCountdown" :remaining="game.roundTimeRemaining" />
+    <word-grid :dice="gridDice" :isShaking="shakeBoard" />
+    <p v-if="showRounds">Round: {{game.currentRound}}/{{game.roundsToPlay}}</p>
+    <v-btn color="primary" v-if="showCreateGame" @click="createGame">Create Game</v-btn>
+    <v-btn class="btn-display"  color="primary" v-if="showNextRound" @click="nextRound">{{ game.currentRound | nextRoundText }}</v-btn>
+    <v-btn color="primary" v-if="showFinishGame" @click="finishGame">Finish Game</v-btn>
   </div>
 </template>
 
@@ -12,12 +14,17 @@ import Vue from 'vue';
 import axios from 'axios';
 import * as signalR from "@microsoft/signalr";
 import { Game, GameState, Dice } from "../models/gameState";
+
 import WordGrid from './WordGrid.vue';
+import Countdown from './Countdown.vue';
+
+const { VUE_APP_API_HOST, VUE_APP_API_PORT } = process.env;
 
 export default Vue.extend({
   name: 'GameDisplay',
   components: {
-    WordGrid
+    WordGrid,
+    Countdown
   },
   props: {
   },
@@ -27,15 +34,21 @@ export default Vue.extend({
           game: {},
           gameState: 0,
           gridDice: dice,
+          shakeBoard: false,
       };
   },
   created: async function() {
     await this.LoadCurrentData();
     await this.initPushNotifications();
   },
+  filters: {
+    nextRoundText: function(round: number): string {
+      return round > 0 ? "Next Round" : "Let's Begin";
+    }
+  },
   computed: {
     showCreateGame: function(): boolean {
-      return this.gameState === 0;
+      return this.gameState === 0 || this.gameState === 4;
     },
     showNextRound: function(): boolean {
       const inProgress = this.gameState !== 0;
@@ -44,30 +57,49 @@ export default Vue.extend({
       return inProgress && !playedAllRounds;
     },
     showFinishGame: function(): boolean {
-      const inProgress = this.gameState !== 0;
+      const inProgress = this.gameState !== 0 && this.gameState !== 4;
       const g = this.game as Game;
       const playedAllRounds = g.currentRound === g.roundsToPlay;
       return inProgress && playedAllRounds;
+    },
+    showRounds: function(): boolean {
+      const g = this.game as Game;
+      return g.currentRound > 0 && g.gameState !== 4;
+    },
+    showCountdown: function(): boolean {
+      return !(this.gameState === 0 || this.gameState === 4);
     }
   },
   methods: {
     initPushNotifications() {
       const connection = new signalR.HubConnectionBuilder()
-        .withUrl("https://localhost:5001/Hubs/Game")
+        .withUrl(`https://${VUE_APP_API_HOST}:${VUE_APP_API_PORT}/Hubs/Game`)
         .build();
 
       connection.on("gameCreatedAsync", (gt: Game) => {
-        console.log("Game Created!");
         this.game = gt;
         this.gameState = gt.gameState;
         this.gridDice = gt.grid;
       });
 
-      connection.on("nextRoundAsync", (gt: Game) => {
-        console.log("Next Round Started!");
+      connection.on("shakingBoardAsync", (gt: Game) => {
         this.game = gt;
         this.gameState = gt.gameState;
         this.gridDice = gt.grid;
+        this.shakeBoard = true;
+      })
+
+      connection.on("nextRoundAsync", (gt: Game) => {
+        this.game = gt;
+        this.gameState = gt.gameState;
+        this.gridDice = gt.grid;
+        this.shakeBoard = false;
+      });
+
+      connection.on("gameFinishedAsync", (gt: Game) => {
+        this.game = gt;
+        this.gameState = gt.gameState;
+        this.gridDice = [];
       });
 
     connection
@@ -75,18 +107,19 @@ export default Vue.extend({
         .catch(err => console.error(err));
     },
     async LoadCurrentData() {
-      const response = await axios.get('https://localhost:5001/game/state');
+      const response = await axios.get(`https://${VUE_APP_API_HOST}:${VUE_APP_API_PORT}/game/state`);
       this.game = response.data;
       this.gameState = response.data.gameState;
+      this.gridDice = response.data.grid;
     },
     async createGame() {
-      const response = await axios.get('https://localhost:5001/game/create');
+      const response = await axios.get(`https://${VUE_APP_API_HOST}:${VUE_APP_API_PORT}/game/create`);
     },
     async nextRound() {
-      const response = await axios.get('https://localhost:5001/game/next/round');
+      const response = await axios.get(`https://${VUE_APP_API_HOST}:${VUE_APP_API_PORT}/game/next/round`);
     },
     async finishGame() {
-      throw new Error("not yet implemented: requires game to finish");
+      const response = await axios.get(`https://${VUE_APP_API_HOST}:${VUE_APP_API_PORT}/game/finish`);
     }
   }
 });
@@ -107,5 +140,19 @@ li {
 }
 a {
   color: #42b983;
+}
+
+.game-container {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+
+.btn-display {
+  // margin-left: 90px;
+  align-content: center;
 }
 </style>

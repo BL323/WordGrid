@@ -10,9 +10,9 @@ namespace WordGrid.Core.Models
         public Guid ID { get; }
 
         /// <summary>
-        /// Gets and sets a value indicating if the game is in progress.
+        /// Gets and sets a value indicating the game state.
         /// </summary>
-        public bool InProgress { get; private set; }
+        public State State { get; private set; }
 
         /// <summary>
         /// Gets and sets the number of rounds that have been played.
@@ -35,6 +35,11 @@ namespace WordGrid.Core.Models
         public Grid Grid { get; }
 
         /// <summary>
+        /// Gets and sets the expiry time of the current round.
+        /// </summary>
+        public DateTime RoundExpires { get; private set; }
+
+        /// <summary>
         /// Initialises a new instance of the <see cref="GameState" /> class.
         /// </summary>
         internal Game(
@@ -44,6 +49,7 @@ namespace WordGrid.Core.Models
         {
             // when supporting multiple games a new Guid should be generated each time.
             ID = new Guid("88b9cc3c-bd93-497e-8f06-03b2d831d020"); //Guid.NewGuid();
+            State = State.AwaitingNextRound;
             Grid = grid;
             RoundsToPlay = roundsToPlay;
             SecondsPerRound = secondsPerRound;
@@ -57,9 +63,14 @@ namespace WordGrid.Core.Models
             if(NumberOfPlayedRounds == RoundsToPlay)
                 return;
 
-            Grid.ShuffleAndRoll();
-
             NumberOfPlayedRounds++;
+            State = State.RoundInProgress;
+        }
+
+        public void ShuffleBoard()
+        {
+            Grid.ShuffleAndRoll();
+            State = State.RoundInProgress;
         }
 
         /// <summary>
@@ -67,7 +78,21 @@ namespace WordGrid.Core.Models
         /// </summary>
         public void FinishGame()
         {
-            InProgress = false;
+            State = State.Finished;
         }
+
+        public void SetCountdown()
+        {
+            this.RoundExpires = DateTime.UtcNow.AddMinutes(1);
+        }
+    }
+
+    public enum State 
+    {
+        NotStarted,        
+        AwaitingNextRound,
+        ShakingBoard,
+        RoundInProgress,
+        Finished
     }
 }

@@ -32,5 +32,10 @@ namespace WordGrid.Api.Respositories
 
             return null;
         }
+
+        public void RemoveGame(Guid id)
+        {
+            _memoryCache.Remove(id);
+        }
     }
 }

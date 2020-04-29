@@ -41,5 +41,40 @@ namespace WordGrid.Tests
         {
             Assert.Throws<ArgumentNullException>(() => new Dice(0, null));
         }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(15)]
+        public void CreateDice_SucceedsWith_ValidPosition(int position)
+        {
+            var validFaces = Enumerable
+                .Range(0, 6)
+                .Select(x => Gens.DiceFace.Generate(_random))
+                .ToArray();
+
+            new Dice(position, validFaces);
+        }
+
+        [Fact]
+        public void CreateDice_FailsWith_NegativePosition()
+        {
+            var validFaces = Enumerable
+                .Range(0, 6)
+                .Select(x => Gens.DiceFace.Generate(_random))
+                .ToArray();
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => new Dice(-1, validFaces));
+        }
+
+        [Fact]
+        public void CreateDice_FailsWith_PositionGreaterThan15()
+        {
+            var validFaces = Enumerable
+                .Range(0, 6)
+                .Select(x => Gens.DiceFace.Generate(_random))
+                .ToArray();
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => new Dice(16, validFaces));
+        }
     } 
 }

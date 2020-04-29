@@ -4,6 +4,7 @@ namespace WordGrid.Api.Client.Interface
     {
         NotStarted,        
         AwaitingNextRound,
+        ShakingBoard,
         RoundInProgress,
         Finished
     }

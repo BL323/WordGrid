@@ -35,5 +35,10 @@ namespace WordGrid.Core.Models
             _gameRepository.AddGame(game);
             return game;
         }
+
+        public void RemoveCompletedGame(Guid id)
+        {
+            _gameRepository.RemoveGame(id);
+        }
     }
 }

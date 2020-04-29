@@ -17,5 +17,10 @@ namespace WordGrid.Core.Repositories
         /// Finds a single game by corresponding ID.
         /// </summary>
         Game FindGame(Guid id);
+
+        /// <summary>
+        /// Removes a game, maybe abandonned.
+        /// </summary>
+        void RemoveGame(Guid id);
     }   
 }

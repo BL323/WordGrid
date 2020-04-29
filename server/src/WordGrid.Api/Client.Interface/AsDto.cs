@@ -20,13 +20,37 @@ namespace WordGrid.Api.Client.Interface
             return new Game
             {
                 ID = game.ID,
-                GameState = GameStateEnum.AwaitingNextRound,
+                GameState = AsStateDto(game.State),
                 CurrentRound = game.NumberOfPlayedRounds,
                 RoundsToPlay = game.RoundsToPlay,
                 GridSize = game.Grid.GridSize,
                 Grid = AsGridDto(game.Grid),
+                RoundTimeRemaining = AsRemaining(game.RoundExpires)
             };
         }
+
+        private double AsRemaining(DateTime roundExpires)
+        {
+            if(roundExpires == null)
+                return 0;
+                
+            var seconds = (roundExpires - DateTime.UtcNow).TotalSeconds;
+            if(seconds < 0)
+                return 0;
+
+            return seconds;
+        }
+
+        private GameStateEnum AsStateDto(State state)
+             => state switch 
+             {
+                 State.NotStarted => GameStateEnum.NotStarted,
+                 State.AwaitingNextRound => GameStateEnum.AwaitingNextRound,
+                 State.ShakingBoard => GameStateEnum.ShakingBoard,
+                 State.RoundInProgress => GameStateEnum.RoundInProgress,
+                 State.Finished => GameStateEnum.Finished,
+                 _ => throw new NotSupportedException("Mapping to state not supported.")
+             };
 
         private List<Dice> AsGridDto(Grid grid)
         {

@@ -57,11 +57,39 @@ namespace WordGrid.Api.Controllers
             var game = _gameManager.GetGame(GameId);
             if(game == null)
                 return;
-                 
+
             game.NextRound();
+
+            // shuffling board
+            for(var i = 0; i < 5; i++)
+            {
+                game.ShuffleBoard();
+                await _gameHub.Clients.All.SendAsync("ShakingBoardAsync", _asDto.Game(game));
+                await Task.Delay(250);
+            }
+
+            game.SetCountdown();
 
             // This should be moved into a domain event reaction to subscribers for the game ID.
             await _gameHub.Clients.All.SendAsync("NextRoundAsync", _asDto.Game(game));
+        }
+
+        [HttpGet]
+        [Route("finish")]
+        public async Task FinishgameAsync()
+        {
+            await Task.CompletedTask;
+
+            var game = _gameManager.GetGame(GameId);
+            if(game == null)
+                return;
+                 
+            game.FinishGame();
+
+            _gameManager.RemoveCompletedGame(game.ID);
+
+            // This should be moved into a domain event reaction to subscribers for the game ID.
+            await _gameHub.Clients.All.SendAsync("GameFinishedAsync", _asDto.Game(game));
         }
     }
 }

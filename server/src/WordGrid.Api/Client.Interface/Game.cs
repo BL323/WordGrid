@@ -13,5 +13,6 @@ namespace WordGrid.Api.Client.Interface
         public int RoundsToPlay { get; set; }
         public int CountDownLength { get; set; }
         public DateTime CountDownTo { get; set; }
+        public double RoundTimeRemaining { get; set; }
     }
 }

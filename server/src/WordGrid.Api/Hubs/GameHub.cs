@@ -12,7 +12,9 @@ namespace server.Hubs
     public interface IGameClient 
     {
         Task GameCreatedAsync(Game game);
+        Task ShakingBoardAsync(Game game);
         Task NextRoundAsync(Game game);
+        Task GameFinishedAsync(Game game);
     }
 
     /// <summary>
