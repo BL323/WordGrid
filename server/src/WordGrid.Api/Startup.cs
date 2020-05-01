@@ -12,7 +12,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using server.Hubs;
 using WordGrid.Api.Client.Interface;
+using WordGrid.Api.Reducers;
 using WordGrid.Api.Respositories;
+using WordGrid.Core.Domain;
 using WordGrid.Core.Models;
 using WordGrid.Core.Repositories;
 
@@ -39,6 +41,7 @@ namespace server
             services.AddTransient<GameManager>();
             services.AddTransient<GridFactory>();
             services.AddTransient<AsDto>();
+            services.AddSingleton<IEventPublisher, EventReducer>(); 
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

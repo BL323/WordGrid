@@ -5,7 +5,6 @@ using WordGrid.Api.Client.Interface;
 namespace server.Hubs
 {
     // https://medium.com/@pielegacy/giving-the-valuescontroller-superpowers-with-signalr-core-7d4ff2be9e1c
-
     /// <summary>
     /// Defines available game events.
     /// </summary>
@@ -24,7 +23,6 @@ namespace server.Hubs
     {
         public GameHub()
         {
-
         }
     }
 

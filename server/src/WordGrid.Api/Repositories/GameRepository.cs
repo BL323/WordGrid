@@ -23,8 +23,16 @@ namespace WordGrid.Api.Respositories
             _memoryCache = memoryCache;
         }
 
+        /// <summary>
+        /// Adds a game to the repository.
+        /// </summary>
+        /// <param name="game"></param>
         public void AddGame(Game game) => _memoryCache.Set(game.ID, game);
 
+        /// <summary>
+        /// Finds a game by it's ID.
+        /// </summary>
+        /// <param name="id">The unique ID of the game to find.</param>
         public Game FindGame(Guid id)
         {
             if(_memoryCache.TryGetValue(id, out Game game))
@@ -33,6 +41,9 @@ namespace WordGrid.Api.Respositories
             return null;
         }
 
+        /// <summary>
+        /// Removes a game by it's ID.
+        /// </summary>
         public void RemoveGame(Guid id)
         {
             _memoryCache.Remove(id);

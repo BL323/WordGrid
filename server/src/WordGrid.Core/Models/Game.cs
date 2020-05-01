@@ -1,4 +1,7 @@
 using System;
+using System.Threading.Tasks;
+using Dawn;
+using WordGrid.Core.Domain;
 
 namespace WordGrid.Core.Models
 {
@@ -39,10 +42,13 @@ namespace WordGrid.Core.Models
         /// </summary>
         public DateTime RoundExpires { get; private set; }
 
+        private readonly IEventPublisher _eventPublisher;
+
         /// <summary>
         /// Initialises a new instance of the <see cref="GameState" /> class.
         /// </summary>
         internal Game(
+            Domain.IEventPublisher eventPublisher,
             Grid grid, 
             int roundsToPlay = 5,
             int secondsPerRound = 90) 
@@ -51,45 +57,67 @@ namespace WordGrid.Core.Models
             ID = new Guid("88b9cc3c-bd93-497e-8f06-03b2d831d020"); //Guid.NewGuid();
             State = State.AwaitingNextRound;
             Grid = grid;
-            RoundsToPlay = roundsToPlay;
-            SecondsPerRound = secondsPerRound;
+            RoundsToPlay = Guard.Argument(roundsToPlay, nameof(roundsToPlay))
+                                .GreaterThan(0)
+                                .LessThan(15)
+                                .Value;
+            SecondsPerRound = Guard.Argument(secondsPerRound, nameof(secondsPerRound))
+                                .GreaterThan(30)
+                                .LessThan(300)
+                                .Value;
+            ;
+            _eventPublisher = Guard.Argument(eventPublisher, nameof(eventPublisher))
+                                .NotNull()
+                                .Value;
         }
 
         /// <summary>
-        /// Begins a new round within a game.
+        /// Initialises a new game.
         /// </summary>
-        public void NextRound()
+        internal async Task InitialiseNewGameAsync()
+            => await _eventPublisher.PublishAsync(new GameCreatedEvent(this));
+
+        /// <summary>
+        /// Starts the next round of the game.
+        /// </summary>
+        internal async Task NextRoundAsync()
         {
             if(NumberOfPlayedRounds == RoundsToPlay)
                 return;
 
             NumberOfPlayedRounds++;
             State = State.RoundInProgress;
-        }
 
-        /// <summary>
-        /// Shuffles all the dice on the grid.
-        /// </summary>
-        public void ShuffleBoard()
-        {
-            Grid.ShuffleAndRoll();
-            State = State.RoundInProgress;
-        }
+            // shuffling board
+            for(var i = 0; i < 5; i++)
+            {
+                await ShuffleBoardAsync();
+                await Task.Delay(250);
+            }
 
-        /// <summary>
-        /// Sets the round time limit by adding 1 mintue to existing time.
-        /// </summary>
-        public void SetCountdown()
-        {
-            this.RoundExpires = DateTime.UtcNow.AddSeconds(SecondsPerRound);
+            await SetCountdownAsync();
         }
 
         /// <summary>
         /// Finishes the game.
         /// </summary>
-        public void FinishGame()
+        internal async Task FinishGameAsync()
         {
             State = State.Finished;
+            await _eventPublisher.PublishAsync(new GameFinishedEvent(this));
+        }
+
+        private async Task ShuffleBoardAsync()
+        {
+            Grid.ShuffleAndRoll();
+            State = State.RoundInProgress;
+            await _eventPublisher.PublishAsync(new StartedShakingBoardEvent(this));
+        }
+
+        private async Task SetCountdownAsync()
+        {
+            RoundExpires = DateTime.UtcNow.AddSeconds(SecondsPerRound);
+            await _eventPublisher.PublishAsync(new StartedNextRoundEvent(this));
         }
     }
 
