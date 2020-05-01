@@ -41,9 +41,9 @@ namespace WordGrid.Api.Controllers
 
         [HttpGet]
         [Route("create")]
-        public async Task CreateNewGameAsync()
+        public async Task CreateNewGameAsync(int numberOfRounds, int secondsPerRound)
         {
-            var game = _gameManager.CreateNewGame();
+            var game = _gameManager.CreateNewGame(numberOfRounds, secondsPerRound);
             // This should be moved into a domain event reaction to subscribers for the game ID.
             await _gameHub.Clients.All.SendAsync("GameCreatedAsync", _asDto.Game(game));
         }
@@ -76,7 +76,7 @@ namespace WordGrid.Api.Controllers
 
         [HttpGet]
         [Route("finish")]
-        public async Task FinishgameAsync()
+        public async Task FinishGameAsync()
         {
             await Task.CompletedTask;
 

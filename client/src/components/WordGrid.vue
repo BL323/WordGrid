@@ -47,7 +47,7 @@ export default Vue.extend({
 
 <style lang="scss" scoped>
 .container {
-  margin: auto;
+  // margin: auto;
 }
 
 .word-grid {
@@ -55,6 +55,6 @@ export default Vue.extend({
   grid-template-columns: 20% 20% 20% 20%;
   grid-template-rows: 20% 20% 20% 20%;
   grid-gap: 12px;
-  margin: auto;
+  // margin: auto;
 }
 </style>

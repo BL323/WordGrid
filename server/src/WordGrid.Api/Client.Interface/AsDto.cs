@@ -25,7 +25,8 @@ namespace WordGrid.Api.Client.Interface
                 RoundsToPlay = game.RoundsToPlay,
                 GridSize = game.Grid.GridSize,
                 Grid = AsGridDto(game.Grid),
-                RoundTimeRemaining = AsRemaining(game.RoundExpires)
+                RoundTimeRemaining = AsRemaining(game.RoundExpires),
+                CountdownLength = game.SecondsPerRound
             };
         }
 

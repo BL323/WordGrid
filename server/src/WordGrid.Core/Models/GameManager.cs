@@ -27,11 +27,11 @@ namespace WordGrid.Core.Models
             return game;
         }
 
-        public Game CreateNewGame()
+        public Game CreateNewGame(int numberOfRounds, int secondsPerRound)
         {
             // use default options
             var diceGrid = _gridFactory.BuildWithClassicDice();
-            var game = new Game(diceGrid);
+            var game = new Game(diceGrid, numberOfRounds, secondsPerRound);
             _gameRepository.AddGame(game);
             return game;
         }

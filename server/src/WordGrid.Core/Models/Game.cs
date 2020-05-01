@@ -45,7 +45,7 @@ namespace WordGrid.Core.Models
         internal Game(
             Grid grid, 
             int roundsToPlay = 5,
-            int secondsPerRound = 30) 
+            int secondsPerRound = 90) 
         {
             // when supporting multiple games a new Guid should be generated each time.
             ID = new Guid("88b9cc3c-bd93-497e-8f06-03b2d831d020"); //Guid.NewGuid();
@@ -67,10 +67,21 @@ namespace WordGrid.Core.Models
             State = State.RoundInProgress;
         }
 
+        /// <summary>
+        /// Shuffles all the dice on the grid.
+        /// </summary>
         public void ShuffleBoard()
         {
             Grid.ShuffleAndRoll();
             State = State.RoundInProgress;
+        }
+
+        /// <summary>
+        /// Sets the round time limit by adding 1 mintue to existing time.
+        /// </summary>
+        public void SetCountdown()
+        {
+            this.RoundExpires = DateTime.UtcNow.AddSeconds(SecondsPerRound);
         }
 
         /// <summary>
@@ -79,11 +90,6 @@ namespace WordGrid.Core.Models
         public void FinishGame()
         {
             State = State.Finished;
-        }
-
-        public void SetCountdown()
-        {
-            this.RoundExpires = DateTime.UtcNow.AddMinutes(1);
         }
     }
 

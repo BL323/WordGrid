@@ -5,8 +5,8 @@ interface Game {
   grid: Array<Dice>;
   currentRound: number;
   roundsToPlay: number;
-  countDownLength: number;
-  countDownTo: any;
+  countdownLength: number;
+  roundTimeRemaining: number;
 }
 
 enum GameState {
