@@ -1,85 +1,93 @@
 <template>
-    <div class="text-center">
+  <div class="text-center">
     <v-progress-circular
+      class="spinner"
       :rotate="360"
       :size="100"
       :width="15"
-      :value="value"
-      :color="timerColor"
-    >
-      {{ secondsRemaining }}
-    </v-progress-circular>
- 
+      :value="percentageRemaining"
+      :color="timerColour"
+    >{{ secondsRemaining }}</v-progress-circular>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
+import { defineComponent } from "@vue/composition-api";
+import { ref, computed, watch, onMounted } from "@vue/composition-api";
+
 import EventBus from "../events/eventBus";
 import { CountdownCompletedEvent } from "../events/CountdownCompletedEvent";
 
-export default Vue.extend({
+export default defineComponent({
   props: {
-    remaining: { type: Number },
-    isActive: { type: Boolean },
-    secondsPerRound: { type: Number }
+    remaining: { type: Number, default: () => 0 },
+    isActive: { type: Boolean, default: () => false },
+    secondsPerRound: { type: Number, default: () => 90 }
   },
-   data () {
-      return {
-        interval: {},
-        value: 0,
-        secondsRemaining: 0,
-        countdownActive: false,
-      }
-    },
-    computed: {
-      timerColor: function(): string {
-        if(this.secondsRemaining <= 15)
-          return "red";
+  setup(props) {
+    // state
+    const interval = ref({});
 
-        return "primary";
-      }
-    },
-    watch: {
-      remaining: function(newVal: number) {
-        this.value = (100 / this.secondsPerRound) * newVal;
-        this.secondsRemaining = Math.round(newVal);
-      },
-      isActive: function(newVal: boolean) {
-        this.countdownActive = newVal;
-      }
-    },
-    mounted () {
-        this.value = (100 / this.secondsPerRound) * this.remaining;
-        this.secondsRemaining = Math.round(this.remaining);
-        this.countdownActive = this.isActive;
+    // one of these could be computed?
+    const percentageRemaining = ref(0);
+    const secondsRemaining = ref(0);
 
-      this.interval = setInterval(() => {
-        if(!this.countdownActive)
-          return;
+    // computed
+    const timerColour = computed((): string =>
+      secondsRemaining.value <= 15 ? "red" : "primary"
+    );
 
-        if (this.value === 0 || this.value < 0) {
-          this.value = 0;
-          this.secondsRemaining = 0;
+    // watches
+    const remainingWatch = watch(
+      () => props.remaining,
+      (newVal: number) => {
+        percentageRemaining.value = (100 / props.secondsPerRound) * newVal;
+        secondsRemaining.value = Math.round(newVal);
+      }
+    );
+
+    // hooks
+    onMounted(() => {
+      percentageRemaining.value =
+        (100 / props.secondsPerRound) * props.remaining;
+      secondsRemaining.value = Math.round(props.remaining);
+
+      interval.value = setInterval(() => {
+        if (!props.isActive) return;
+
+        if (
+          percentageRemaining.value === 0 ||
+          percentageRemaining.value < 0 ||
+          secondsRemaining.value < 0
+        ) {
+          percentageRemaining.value = 0;
+          secondsRemaining.value = 0;
           return;
         }
 
-        this.value -= (100 / this.secondsPerRound) * 1;
-        this.secondsRemaining -= 1;
+        percentageRemaining.value -= (100 / props.secondsPerRound) * 1;
+        secondsRemaining.value -= 1;
 
-        if(this.value === 0 || this.value < 0) {
-          EventBus.$emit('CountdownCompleted', CountdownCompletedEvent);
+        if (percentageRemaining.value === 0 || percentageRemaining.value < 0) {
+          EventBus.$emit("CountdownCompleted", CountdownCompletedEvent);
         }
+      }, 1000);
+    });
 
-      }, 1000)
-    },
-})
+    return {
+      interval,
+      percentageRemaining,
+      remainingWatch,
+      secondsRemaining,
+      timerColour
+    };
+  }
+});
 </script>
 
 <style lang="scss" scoped>
-
-.v-progress-circular {
-  margin: 1rem;
+.spinner {
+  margin-top: 15px;
 }
-
 </style>

@@ -59,11 +59,11 @@ namespace WordGrid.Core.Models
             Grid = grid;
             RoundsToPlay = Guard.Argument(roundsToPlay, nameof(roundsToPlay))
                                 .GreaterThan(0)
-                                .LessThan(15)
+                                .LessThan(16)
                                 .Value;
             SecondsPerRound = Guard.Argument(secondsPerRound, nameof(secondsPerRound))
-                                .GreaterThan(30)
-                                .LessThan(300)
+                                .GreaterThan(29)
+                                .LessThan(301)
                                 .Value;
             ;
             _eventPublisher = Guard.Argument(eventPublisher, nameof(eventPublisher))

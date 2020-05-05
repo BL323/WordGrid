@@ -12,6 +12,7 @@ interface Game {
 enum GameState {
   NotStarted,        
   AwaitingNextRound,
+  ShakingBoard,
   RoundInProgress,
   Finished
 }
